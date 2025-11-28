@@ -356,12 +356,15 @@
                 endingEmoji.textContent = '🎉';
                 endingTitle.textContent = 'Wonderful Ending!';
                 createConfetti();
-            } else if (data.ending_type === 'good_outcome') {
+            } else if (data.ending_type === 'mostly_positive' || data.ending_type === 'redemption') {
                 endingEmoji.textContent = '⭐';
                 endingTitle.textContent = 'Great Ending!';
-            } else if (data.ending_type === 'mixed_outcome') {
+            } else if (data.ending_type === 'mixed' || data.ending_type === 'late_redemption') {
                 endingEmoji.textContent = '🌈';
                 endingTitle.textContent = 'The End!';
+            } else if (data.ending_type === 'learning_opportunity') {
+                endingEmoji.textContent = '💭';
+                endingTitle.textContent = "Let's Try Again!";
             } else {
                 endingEmoji.textContent = '💭';
                 endingTitle.textContent = 'Story Complete!';
