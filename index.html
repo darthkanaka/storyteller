@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Story Time Adventure</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+
+        * {
+            font-family: 'Nunito', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .bounce {
+            animation: bounce 2s infinite;
+        }
+
+        .choice-btn {
+            transition: all 0.3s ease;
+        }
+
+        .choice-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .choice-btn:active {
+            transform: scale(0.95);
+        }
+
+        .good-choice {
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+            box-shadow: 0 8px 0 #16a34a, 0 15px 20px rgba(0,0,0,0.2);
+        }
+
+        .good-choice:active {
+            box-shadow: 0 4px 0 #16a34a, 0 8px 15px rgba(0,0,0,0.2);
+            transform: translateY(4px) scale(0.95);
+        }
+
+        .other-choice {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            box-shadow: 0 8px 0 #d97706, 0 15px 20px rgba(0,0,0,0.2);
+        }
+
+        .other-choice:active {
+            box-shadow: 0 4px 0 #d97706, 0 8px 15px rgba(0,0,0,0.2);
+            transform: translateY(4px) scale(0.95);
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, #f472b6 0%, #ec4899 100%);
+            box-shadow: 0 10px 0 #be185d, 0 20px 30px rgba(0,0,0,0.3);
+        }
+
+        .start-btn:active {
+            box-shadow: 0 5px 0 #be185d, 0 10px 20px rgba(0,0,0,0.3);
+            transform: translateY(5px);
+        }
+
+        .story-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+
+        .character-badge {
+            background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+        }
+
+        .loading-spinner {
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .star {
+            position: absolute;
+            font-size: 2rem;
+            animation: twinkle 2s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: fall 3s linear forwards;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <!-- Start Screen -->
+    <div id="start-screen" class="screen active flex-col items-center justify-center text-center w-full max-w-lg">
+        <div class="mb-8">
+            <span class="text-8xl bounce inline-block">📚</span>
+        </div>
+        <h1 class="text-5xl md:text-6xl font-extrabold text-white mb-4 drop-shadow-lg">
+            Story Time!
+        </h1>
+        <p class="text-xl md:text-2xl text-white/90 mb-12 drop-shadow">
+            Let's go on an adventure together!
+        </p>
+        <button onclick="startNewStory()" class="start-btn choice-btn text-white text-2xl md:text-3xl font-bold py-6 px-12 rounded-full">
+            🌟 Start Adventure 🌟
+        </button>
+    </div>
+
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="screen flex-col items-center justify-center text-center">
+        <div class="loading-spinner mb-6"></div>
+        <p class="text-2xl text-white font-bold">Getting your story ready...</p>
+    </div>
+
+    <!-- Scene Screen -->
+    <div id="scene-screen" class="screen flex-col items-center justify-center w-full max-w-2xl">
+        <div class="story-card p-6 md:p-10 w-full">
+            <!-- Character Badge -->
+            <div class="flex justify-center mb-6">
+                <span class="character-badge text-white text-xl md:text-2xl font-bold py-2 px-6 rounded-full">
+                    Meet <span id="character-name">...</span>!
+                </span>
+            </div>
+
+            <!-- Teaching Moment -->
+            <div class="bg-purple-100 rounded-2xl p-4 mb-6 text-center">
+                <span class="text-2xl">💡</span>
+                <p id="teaching-moment" class="text-purple-700 font-semibold text-lg">...</p>
+            </div>
+
+            <!-- Story Text -->
+            <div class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-3xl p-6 mb-6">
+                <p id="story-summary" class="text-gray-700 text-xl md:text-2xl leading-relaxed mb-4">...</p>
+                <p id="decision-setup" class="text-gray-800 text-xl md:text-2xl font-semibold leading-relaxed">...</p>
+            </div>
+
+            <!-- Emotional Tone -->
+            <div class="text-center mb-6">
+                <span id="emotional-tone" class="text-gray-500 italic text-lg">...</span>
+            </div>
+
+            <!-- Choice Buttons -->
+            <div id="choices-container" class="flex flex-col gap-4">
+                <!-- Buttons will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Ending Screen -->
+    <div id="ending-screen" class="screen flex-col items-center justify-center w-full max-w-2xl">
+        <div class="story-card p-6 md:p-10 w-full text-center">
+            <!-- Ending Badge -->
+            <div class="mb-6">
+                <span id="ending-emoji" class="text-7xl">🎉</span>
+            </div>
+
+            <h2 id="ending-title" class="text-3xl md:text-4xl font-extrabold text-purple-600 mb-6">
+                The End!
+            </h2>
+
+            <!-- Final Message -->
+            <div class="bg-gradient-to-br from-green-50 to-blue-50 rounded-3xl p-6 mb-6">
+                <p id="final-message" class="text-gray-700 text-xl md:text-2xl leading-relaxed">...</p>
+            </div>
+
+            <!-- Parent Talking Point -->
+            <div class="bg-yellow-100 rounded-2xl p-4 mb-8">
+                <p class="text-yellow-800 font-bold text-lg mb-2">👨‍👩‍👧 Talk Together:</p>
+                <p id="parent-talking-point" class="text-yellow-700 text-lg">...</p>
+            </div>
+
+            <!-- End Options -->
+            <div id="end-options-container" class="flex flex-col sm:flex-row gap-4 justify-center">
+                <!-- Buttons will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Configuration
+        const API_URL = 'https://ben9thave.app.n8n.cloud/webhook/story-interaction';
+
+        // State
+        let currentStoryId = null;
+        let currentSceneId = null;
+
+        // Screen Management
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        // API Calls
+        async function apiCall(data) {
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                alert('Oops! Something went wrong. Let\'s try again!');
+                showScreen('start-screen');
+                return null;
+            }
+        }
+
+        // Start New Story
+        async function startNewStory() {
+            showScreen('loading-screen');
+
+            const data = await apiCall({ action: 'new_story' });
+
+            if (data) {
+                currentStoryId = data.story_id;
+                currentSceneId = data.scene_id;
+                displayScene(data);
+            }
+        }
+
+        // Make a Choice
+        async function makeChoice(choice) {
+            showScreen('loading-screen');
+
+            const data = await apiCall({
+                action: 'make_choice',
+                story_id: currentStoryId,
+                current_scene_id: currentSceneId,
+                choice: choice
+            });
+
+            if (data) {
+                currentSceneId = data.scene_id;
+
+                if (data.is_ending) {
+                    displayEnding(data);
+                } else {
+                    displayScene(data);
+                }
+            }
+        }
+
+        // Replay Story
+        async function replayStory() {
+            showScreen('loading-screen');
+
+            const data = await apiCall({
+                action: 'replay',
+                story_id: currentStoryId
+            });
+
+            if (data) {
+                currentSceneId = data.scene_id;
+                displayScene(data);
+            }
+        }
+
+        // Display Scene
+        function displayScene(data) {
+            document.getElementById('character-name').textContent = data.character_name || 'Friend';
+            document.getElementById('teaching-moment').textContent = data.teaching_moment || '';
+            document.getElementById('story-summary').textContent = data.story_summary || '';
+            document.getElementById('decision-setup').textContent = data.decision_setup || '';
+            document.getElementById('emotional-tone').textContent = `Feeling: ${data.emotional_tone || 'happy'}`;
+
+            // Generate choice buttons
+            const container = document.getElementById('choices-container');
+            container.innerHTML = '';
+
+            if (data.choices && data.choices.length > 0) {
+                data.choices.forEach((choice, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = `choice-btn text-white text-xl md:text-2xl font-bold py-5 px-8 rounded-full ${
+                        choice.choice === 'good' ? 'good-choice' : 'other-choice'
+                    }`;
+
+                    const emoji = choice.choice === 'good' ? '💚' : '🤔';
+                    btn.innerHTML = `${emoji} ${choice.label}`;
+                    btn.onclick = () => makeChoice(choice.choice);
+
+                    container.appendChild(btn);
+                });
+            }
+
+            showScreen('scene-screen');
+        }
+
+        // Display Ending
+        function displayEnding(data) {
+            // Set ending emoji based on outcome
+            const endingEmoji = document.getElementById('ending-emoji');
+            const endingTitle = document.getElementById('ending-title');
+
+            if (data.ending_type === 'best_outcome') {
+                endingEmoji.textContent = '🎉';
+                endingTitle.textContent = 'Wonderful Ending!';
+                createConfetti();
+            } else if (data.ending_type === 'good_outcome') {
+                endingEmoji.textContent = '⭐';
+                endingTitle.textContent = 'Great Ending!';
+            } else if (data.ending_type === 'mixed_outcome') {
+                endingEmoji.textContent = '🌈';
+                endingTitle.textContent = 'The End!';
+            } else {
+                endingEmoji.textContent = '💭';
+                endingTitle.textContent = 'Story Complete!';
+            }
+
+            document.getElementById('final-message').textContent = data.final_message || 'The End!';
+            document.getElementById('parent-talking-point').textContent = data.parent_talking_point || 'What did you learn?';
+
+            // Generate end option buttons
+            const container = document.getElementById('end-options-container');
+            container.innerHTML = '';
+
+            if (data.options && data.options.length > 0) {
+                data.options.forEach(option => {
+                    const btn = document.createElement('button');
+                    btn.className = 'choice-btn text-white text-lg md:text-xl font-bold py-4 px-8 rounded-full';
+
+                    if (option.action === 'replay') {
+                        btn.className += ' other-choice';
+                        btn.innerHTML = `🔄 ${option.label}`;
+                        btn.onclick = replayStory;
+                    } else if (option.action === 'new_story') {
+                        btn.className += ' good-choice';
+                        btn.innerHTML = `✨ ${option.label}`;
+                        btn.onclick = startNewStory;
+                    }
+
+                    container.appendChild(btn);
+                });
+            } else {
+                // Default buttons if none provided
+                const replayBtn = document.createElement('button');
+                replayBtn.className = 'choice-btn other-choice text-white text-lg md:text-xl font-bold py-4 px-8 rounded-full';
+                replayBtn.innerHTML = '🔄 Try Again';
+                replayBtn.onclick = replayStory;
+                container.appendChild(replayBtn);
+
+                const newBtn = document.createElement('button');
+                newBtn.className = 'choice-btn good-choice text-white text-lg md:text-xl font-bold py-4 px-8 rounded-full';
+                newBtn.innerHTML = '✨ New Story';
+                newBtn.onclick = startNewStory;
+                container.appendChild(newBtn);
+            }
+
+            showScreen('ending-screen');
+        }
+
+        // Confetti Effect for Best Ending
+        function createConfetti() {
+            const colors = ['#f472b6', '#818cf8', '#4ade80', '#fbbf24', '#60a5fa'];
+
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.top = '-10px';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                    document.body.appendChild(confetti);
+
+                    setTimeout(() => confetti.remove(), 5000);
+                }, i * 50);
+            }
+        }
+    </script>
+</body>
+</html>
