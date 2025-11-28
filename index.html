@@ -208,9 +208,15 @@
                 The End!
             </h2>
 
-            <!-- Final Message -->
-            <div class="bg-gradient-to-br from-green-50 to-blue-50 rounded-3xl p-6 mb-6">
-                <p id="final-message" class="text-gray-700 text-xl md:text-2xl leading-relaxed">...</p>
+            <!-- Main Story Narrative -->
+            <div class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-3xl p-6 mb-6">
+                <p id="ending-narrative" class="text-gray-700 text-xl md:text-2xl leading-relaxed">...</p>
+            </div>
+
+            <!-- Lesson Learned / Final Message -->
+            <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-4 mb-6">
+                <p class="text-green-800 font-bold text-lg mb-2">✨ What We Learned:</p>
+                <p id="final-message" class="text-green-700 text-lg leading-relaxed">...</p>
             </div>
 
             <!-- Parent Talking Point -->
@@ -370,6 +376,7 @@
                 endingTitle.textContent = 'Story Complete!';
             }
 
+            document.getElementById('ending-narrative').textContent = data.narrative || data.story_summary || '';
             document.getElementById('final-message').textContent = data.final_message || 'The End!';
             document.getElementById('parent-talking-point').textContent = data.parent_talking_point || 'What did you learn?';
 
