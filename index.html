@@ -180,7 +180,7 @@
 
             <!-- Story Text -->
             <div class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-3xl p-6 mb-6">
-                <p id="story-summary" class="text-gray-700 text-xl md:text-2xl leading-relaxed mb-4">...</p>
+                <p id="narrative-text" class="text-gray-700 text-xl md:text-2xl leading-relaxed mb-4">...</p>
                 <p id="decision-setup" class="text-gray-800 text-xl md:text-2xl font-semibold leading-relaxed">...</p>
             </div>
 
@@ -320,7 +320,7 @@
         function displayScene(data) {
             document.getElementById('character-name').textContent = data.character_name || 'Friend';
             document.getElementById('teaching-moment').textContent = data.teaching_moment || '';
-            document.getElementById('story-summary').textContent = data.story_summary || '';
+            document.getElementById('narrative-text').textContent = data.narrative || data.story_summary || '';
             document.getElementById('decision-setup').textContent = data.decision_setup || '';
             document.getElementById('emotional-tone').textContent = `Feeling: ${data.emotional_tone || 'happy'}`;
 
