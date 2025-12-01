@@ -15,6 +15,24 @@
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
             min-height: 100vh;
+            transition: background 0.5s ease;
+        }
+
+        /* Emotional tier backgrounds */
+        body.tier-celebration {
+            background: linear-gradient(135deg, #fbbf24 0%, #f472b6 50%, #a78bfa 100%);
+        }
+        body.tier-satisfied {
+            background: linear-gradient(135deg, #4ade80 0%, #22d3ee 50%, #818cf8 100%);
+        }
+        body.tier-reflective {
+            background: linear-gradient(135deg, #94a3b8 0%, #a78bfa 50%, #f0abfc 100%);
+        }
+        body.tier-uncomfortable {
+            background: linear-gradient(135deg, #fbbf24 0%, #fb923c 50%, #94a3b8 100%);
+        }
+        body.tier-disappointed {
+            background: linear-gradient(135deg, #64748b 0%, #94a3b8 50%, #a78bfa 100%);
         }
 
         .screen {
@@ -31,6 +49,15 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .part-content {
+            animation: slideIn 0.4s ease-out;
+        }
+
         @keyframes bounce {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-10px); }
@@ -41,8 +68,21 @@
             50% { transform: scale(1.05); }
         }
 
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(251, 191, 36, 0.5); }
+            50% { box-shadow: 0 0 40px rgba(251, 191, 36, 0.8); }
+        }
+
         .bounce {
             animation: bounce 2s infinite;
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        .glow {
+            animation: glow 2s infinite;
         }
 
         .choice-btn {
@@ -77,6 +117,16 @@
             transform: translateY(4px) scale(0.95);
         }
 
+        .continue-btn {
+            background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+            box-shadow: 0 6px 0 #2563eb, 0 12px 20px rgba(0,0,0,0.2);
+        }
+
+        .continue-btn:active {
+            box-shadow: 0 3px 0 #2563eb, 0 6px 15px rgba(0,0,0,0.2);
+            transform: translateY(3px);
+        }
+
         .start-btn {
             background: linear-gradient(135deg, #f472b6 0%, #ec4899 100%);
             box-shadow: 0 10px 0 #be185d, 0 20px 30px rgba(0,0,0,0.3);
@@ -97,6 +147,37 @@
             background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
         }
 
+        /* Part type styles */
+        .part-opening {
+            border-left: 4px solid #818cf8;
+            background: linear-gradient(135deg, #ede9fe 0%, #e0e7ff 100%);
+        }
+
+        .part-consequence {
+            border-left: 4px solid #f472b6;
+            background: linear-gradient(135deg, #fce7f3 0%, #fdf2f8 100%);
+        }
+
+        .part-transition {
+            border-left: 4px solid #60a5fa;
+            background: linear-gradient(135deg, #dbeafe 0%, #e0f2fe 100%);
+        }
+
+        .part-decision {
+            border-left: 4px solid #fbbf24;
+            background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%);
+        }
+
+        .part-goal-resolution {
+            border-left: 4px solid #4ade80;
+            background: linear-gradient(135deg, #dcfce7 0%, #f0fdf4 100%);
+        }
+
+        .part-reflection {
+            border-left: 4px solid #a78bfa;
+            background: linear-gradient(135deg, #f3e8ff 0%, #faf5ff 100%);
+        }
+
         .loading-spinner {
             border: 4px solid rgba(255,255,255,0.3);
             border-top: 4px solid white;
@@ -111,23 +192,13 @@
             100% { transform: rotate(360deg); }
         }
 
-        .star {
-            position: absolute;
-            font-size: 2rem;
-            animation: twinkle 2s infinite;
-        }
-
-        @keyframes twinkle {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 1; }
-        }
-
         .confetti {
             position: fixed;
             width: 10px;
             height: 10px;
             border-radius: 50%;
             animation: fall 3s linear forwards;
+            pointer-events: none;
         }
 
         @keyframes fall {
@@ -135,6 +206,47 @@
                 transform: translateY(100vh) rotate(720deg);
                 opacity: 0;
             }
+        }
+
+        .stars {
+            position: fixed;
+            pointer-events: none;
+        }
+
+        .star {
+            position: absolute;
+            font-size: 2rem;
+            animation: twinkle 1s ease-in-out forwards;
+        }
+
+        @keyframes twinkle {
+            0% { opacity: 0; transform: scale(0) rotate(0deg); }
+            50% { opacity: 1; transform: scale(1.2) rotate(180deg); }
+            100% { opacity: 0; transform: scale(0.5) rotate(360deg); }
+        }
+
+        /* Progress indicator */
+        .progress-dots {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .progress-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .progress-dot.active {
+            background: white;
+            transform: scale(1.2);
+        }
+
+        .progress-dot.completed {
+            background: #4ade80;
         }
     </style>
 </head>
@@ -162,71 +274,118 @@
         <p class="text-2xl text-white font-bold">Getting your story ready...</p>
     </div>
 
-    <!-- Scene Screen -->
+    <!-- Scene Screen (Three-Part Structure) -->
     <div id="scene-screen" class="screen flex-col items-center justify-center w-full max-w-2xl">
         <div class="story-card p-6 md:p-10 w-full">
-            <!-- Character Badge -->
-            <div class="flex justify-center mb-6">
+            <!-- Progress Indicator -->
+            <div class="progress-dots mb-6">
+                <div id="dot-1" class="progress-dot"></div>
+                <div id="dot-2" class="progress-dot"></div>
+                <div id="dot-3" class="progress-dot"></div>
+            </div>
+
+            <!-- Character Badge (only on scene 1) -->
+            <div id="character-badge-container" class="flex justify-center mb-6 hidden">
                 <span class="character-badge text-white text-xl md:text-2xl font-bold py-2 px-6 rounded-full">
                     Meet <span id="character-name">...</span>!
                 </span>
             </div>
 
-            <!-- Teaching Moment -->
-            <div class="bg-purple-100 rounded-2xl p-4 mb-6 text-center">
+            <!-- Part Icon -->
+            <div class="text-center mb-4">
+                <span id="part-icon" class="text-5xl">📖</span>
+            </div>
+
+            <!-- Part Label -->
+            <div class="text-center mb-4">
+                <span id="part-label" class="text-gray-500 text-sm uppercase tracking-wide font-semibold">Story</span>
+            </div>
+
+            <!-- Story Content -->
+            <div id="part-content" class="part-content rounded-2xl p-6 mb-6">
+                <p id="narrative-text" class="text-gray-700 text-xl md:text-2xl leading-relaxed">...</p>
+            </div>
+
+            <!-- Sub-lesson (shown during decision_setup) -->
+            <div id="sub-lesson-container" class="bg-purple-100 rounded-2xl p-4 mb-6 text-center hidden">
                 <span class="text-2xl">💡</span>
-                <p id="teaching-moment" class="text-purple-700 font-semibold text-lg">...</p>
+                <p id="sub-lesson" class="text-purple-700 font-semibold text-lg">...</p>
             </div>
 
-            <!-- Story Text -->
-            <div class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-3xl p-6 mb-6">
-                <p id="narrative-text" class="text-gray-700 text-xl md:text-2xl leading-relaxed mb-4">...</p>
-                <p id="decision-setup" class="text-gray-800 text-xl md:text-2xl font-semibold leading-relaxed">...</p>
+            <!-- Emotional Beat -->
+            <div id="emotional-beat-container" class="text-center mb-6">
+                <span id="emotional-beat" class="text-gray-500 italic text-lg">...</span>
             </div>
 
-            <!-- Emotional Tone -->
-            <div class="text-center mb-6">
-                <span id="emotional-tone" class="text-gray-500 italic text-lg">...</span>
+            <!-- Continue Button (shown between parts) -->
+            <div id="continue-container" class="flex justify-center hidden">
+                <button onclick="showNextPart()" class="continue-btn choice-btn text-white text-xl md:text-2xl font-bold py-4 px-10 rounded-full">
+                    Continue ➡️
+                </button>
             </div>
 
-            <!-- Choice Buttons -->
-            <div id="choices-container" class="flex flex-col gap-4">
+            <!-- Choice Buttons (only after decision_setup) -->
+            <div id="choices-container" class="flex flex-col gap-4 hidden">
                 <!-- Buttons will be inserted here -->
             </div>
         </div>
     </div>
 
-    <!-- Ending Screen -->
+    <!-- Ending Screen (Three-Part Structure) -->
     <div id="ending-screen" class="screen flex-col items-center justify-center w-full max-w-2xl">
         <div class="story-card p-6 md:p-10 w-full text-center">
-            <!-- Ending Badge -->
-            <div class="mb-6">
-                <span id="ending-emoji" class="text-7xl">🎉</span>
+            <!-- Progress Indicator -->
+            <div class="progress-dots mb-6">
+                <div id="end-dot-1" class="progress-dot"></div>
+                <div id="end-dot-2" class="progress-dot"></div>
+                <div id="end-dot-3" class="progress-dot"></div>
             </div>
 
-            <h2 id="ending-title" class="text-3xl md:text-4xl font-extrabold text-purple-600 mb-6">
+            <!-- Ending Badge -->
+            <div class="mb-4">
+                <span id="ending-emoji" class="text-6xl">🎉</span>
+            </div>
+
+            <h2 id="ending-title" class="text-2xl md:text-3xl font-extrabold text-purple-600 mb-6">
                 The End!
             </h2>
 
-            <!-- Main Story Narrative -->
-            <div class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-3xl p-6 mb-6">
+            <!-- Part Label -->
+            <div class="text-center mb-4">
+                <span id="ending-part-label" class="text-gray-500 text-sm uppercase tracking-wide font-semibold">Story</span>
+            </div>
+
+            <!-- Story Content -->
+            <div id="ending-part-content" class="part-content rounded-2xl p-6 mb-6">
                 <p id="ending-narrative" class="text-gray-700 text-xl md:text-2xl leading-relaxed">...</p>
             </div>
 
-            <!-- Lesson Learned / Final Message -->
-            <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-4 mb-6">
-                <p class="text-green-800 font-bold text-lg mb-2">✨ What We Learned:</p>
-                <p id="final-message" class="text-green-700 text-lg leading-relaxed">...</p>
+            <!-- Goal Outcome (shown during goal_resolution) -->
+            <div id="goal-outcome-container" class="rounded-2xl p-4 mb-6 hidden">
+                <p id="goal-outcome" class="font-semibold text-lg">...</p>
             </div>
 
-            <!-- Parent Talking Point -->
-            <div class="bg-yellow-100 rounded-2xl p-4 mb-8">
+            <!-- Teaching Moment (shown during reflection) -->
+            <div id="teaching-container" class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-4 mb-6 hidden">
+                <p class="text-green-800 font-bold text-lg mb-2">✨ What We Learned:</p>
+                <p id="teaching-moment" class="text-green-700 text-lg leading-relaxed">...</p>
+            </div>
+
+            <!-- Parent Talking Point (shown during reflection) -->
+            <div id="parent-container" class="bg-yellow-100 rounded-2xl p-4 mb-6 hidden">
                 <p class="text-yellow-800 font-bold text-lg mb-2">👨‍👩‍👧 Talk Together:</p>
                 <p id="parent-talking-point" class="text-yellow-700 text-lg">...</p>
             </div>
 
-            <!-- End Options -->
-            <div id="end-options-container" class="flex flex-col sm:flex-row gap-4 justify-center">
+            <!-- Continue Button (shown between parts) -->
+            <div id="ending-continue-container" class="flex justify-center hidden">
+                <button onclick="showNextEndingPart()" class="continue-btn choice-btn text-white text-xl md:text-2xl font-bold py-4 px-10 rounded-full">
+                    Continue ➡️
+                </button>
+            </div>
+
+            <!-- End Options (only after all parts shown) -->
+            <div id="end-options-container" class="flex flex-col sm:flex-row gap-4 justify-center hidden">
                 <!-- Buttons will be inserted here -->
             </div>
         </div>
@@ -239,6 +398,10 @@
         // State
         let currentStoryId = null;
         let currentSceneId = null;
+        let currentSceneData = null;
+        let currentPartIndex = 0;
+        let sceneParts = [];
+        let isEnding = false;
 
         // Screen Management
         function showScreen(screenId) {
@@ -246,6 +409,11 @@
                 screen.classList.remove('active');
             });
             document.getElementById(screenId).classList.add('active');
+        }
+
+        // Reset body classes
+        function resetBodyClasses() {
+            document.body.className = 'min-h-screen flex items-center justify-center p-4';
         }
 
         // API Calls
@@ -274,6 +442,7 @@
 
         // Start New Story
         async function startNewStory() {
+            resetBodyClasses();
             showScreen('loading-screen');
 
             const data = await apiCall({ action: 'new_story' });
@@ -281,7 +450,13 @@
             if (data) {
                 currentStoryId = data.story_id;
                 currentSceneId = data.scene_id;
-                displayScene(data);
+                currentSceneData = data;
+
+                if (data.is_ending) {
+                    setupEndingParts(data);
+                } else {
+                    setupSceneParts(data);
+                }
             }
         }
 
@@ -298,17 +473,19 @@
 
             if (data) {
                 currentSceneId = data.scene_id;
+                currentSceneData = data;
 
                 if (data.is_ending) {
-                    displayEnding(data);
+                    setupEndingParts(data);
                 } else {
-                    displayScene(data);
+                    setupSceneParts(data);
                 }
             }
         }
 
         // Replay Story
         async function replayStory() {
+            resetBodyClasses();
             showScreen('loading-screen');
 
             const data = await apiCall({
@@ -318,50 +495,222 @@
 
             if (data) {
                 currentSceneId = data.scene_id;
-                displayScene(data);
+                currentSceneData = data;
+
+                if (data.is_ending) {
+                    setupEndingParts(data);
+                } else {
+                    setupSceneParts(data);
+                }
             }
         }
 
-        // Display Scene
-        function displayScene(data) {
-            document.getElementById('character-name').textContent = data.character_name || 'Friend';
-            document.getElementById('teaching-moment').textContent = data.teaching_moment || '';
-            document.getElementById('narrative-text').textContent = data.narrative || data.story_summary || '';
-            document.getElementById('decision-setup').textContent = data.decision_setup || '';
-            document.getElementById('emotional-tone').textContent = `Feeling: ${data.emotional_tone || 'happy'}`;
+        // Setup Scene Parts (Non-Ending Scenes)
+        function setupSceneParts(data) {
+            isEnding = false;
+            sceneParts = [];
+            currentPartIndex = 0;
 
-            // Generate choice buttons
+            // Determine if this is scene 1 (has opening) or scene 2-3 (has consequence)
+            if (data.opening) {
+                // Scene 1: opening → transition → decision_setup
+                sceneParts.push({
+                    type: 'opening',
+                    narrative: data.opening.narrative,
+                    emotional_beat: data.opening.emotional_beat,
+                    icon: '🌟',
+                    label: 'Our Story Begins'
+                });
+            } else if (data.consequence) {
+                // Scenes 2-3: consequence → transition → decision_setup
+                sceneParts.push({
+                    type: 'consequence',
+                    narrative: data.consequence.narrative,
+                    emotional_beat: data.consequence.emotional_beat,
+                    reinforcement: data.consequence.reinforcement,
+                    icon: data.consequence.reinforcement === 'positive' ? '😊' : '😟',
+                    label: 'What Happened'
+                });
+            }
+
+            if (data.transition) {
+                sceneParts.push({
+                    type: 'transition',
+                    narrative: data.transition.narrative,
+                    location: data.transition.location,
+                    icon: '🚶',
+                    label: data.transition.location || 'Meanwhile...'
+                });
+            }
+
+            if (data.decision_setup) {
+                sceneParts.push({
+                    type: 'decision',
+                    narrative: data.decision_setup.narrative,
+                    sub_lesson: data.decision_setup.sub_lesson,
+                    tension: data.decision_setup.tension,
+                    prompt: data.decision_setup.prompt,
+                    good_choice: data.decision_setup.good_choice,
+                    bad_choice: data.decision_setup.bad_choice,
+                    icon: '🤔',
+                    label: 'Decision Time'
+                });
+            }
+
+            // Fallback for flat structure (backward compatibility)
+            if (sceneParts.length === 0) {
+                sceneParts.push({
+                    type: 'story',
+                    narrative: data.narrative || data.story_summary || '',
+                    icon: '📖',
+                    label: 'Story'
+                });
+                if (data.decision_setup || data.choices) {
+                    sceneParts.push({
+                        type: 'decision',
+                        narrative: typeof data.decision_setup === 'string' ? data.decision_setup : '',
+                        icon: '🤔',
+                        label: 'Decision Time'
+                    });
+                }
+            }
+
+            // Show character badge only on scene 1
+            const badgeContainer = document.getElementById('character-badge-container');
+            if (data.level === 1 || data.scene_id === 'scene_1') {
+                badgeContainer.classList.remove('hidden');
+                document.getElementById('character-name').textContent = data.character_name || 'Milo';
+            } else {
+                badgeContainer.classList.add('hidden');
+            }
+
+            showScenePart(0);
+            showScreen('scene-screen');
+        }
+
+        // Show a specific scene part
+        function showScenePart(index) {
+            currentPartIndex = index;
+            const part = sceneParts[index];
+
+            // Update progress dots
+            for (let i = 1; i <= 3; i++) {
+                const dot = document.getElementById(`dot-${i}`);
+                dot.classList.remove('active', 'completed');
+                if (i - 1 < index) dot.classList.add('completed');
+                if (i - 1 === index) dot.classList.add('active');
+            }
+
+            // Update icon and label
+            document.getElementById('part-icon').textContent = part.icon;
+            document.getElementById('part-label').textContent = part.label;
+
+            // Update content styling based on part type
+            const contentDiv = document.getElementById('part-content');
+            contentDiv.className = 'part-content rounded-2xl p-6 mb-6';
+            contentDiv.classList.add(`part-${part.type}`);
+
+            // Update narrative
+            document.getElementById('narrative-text').textContent = part.narrative || '';
+
+            // Handle emotional beat
+            const emotionalContainer = document.getElementById('emotional-beat-container');
+            if (part.emotional_beat) {
+                emotionalContainer.classList.remove('hidden');
+                document.getElementById('emotional-beat').textContent = part.emotional_beat;
+            } else {
+                emotionalContainer.classList.add('hidden');
+            }
+
+            // Handle sub-lesson (only for decision type)
+            const subLessonContainer = document.getElementById('sub-lesson-container');
+            if (part.type === 'decision' && part.sub_lesson) {
+                subLessonContainer.classList.remove('hidden');
+                document.getElementById('sub-lesson').textContent = part.sub_lesson;
+            } else {
+                subLessonContainer.classList.add('hidden');
+            }
+
+            // Show continue or choices based on whether this is the last part
+            const continueContainer = document.getElementById('continue-container');
+            const choicesContainer = document.getElementById('choices-container');
+
+            if (index < sceneParts.length - 1) {
+                // Not the last part - show continue button
+                continueContainer.classList.remove('hidden');
+                choicesContainer.classList.add('hidden');
+            } else {
+                // Last part - show choices
+                continueContainer.classList.add('hidden');
+                choicesContainer.classList.remove('hidden');
+                generateChoiceButtons(part);
+            }
+
+            // Trigger animation
+            contentDiv.style.animation = 'none';
+            contentDiv.offsetHeight; // Trigger reflow
+            contentDiv.style.animation = 'slideIn 0.4s ease-out';
+        }
+
+        // Show next part
+        function showNextPart() {
+            if (currentPartIndex < sceneParts.length - 1) {
+                showScenePart(currentPartIndex + 1);
+            }
+        }
+
+        // Generate choice buttons
+        function generateChoiceButtons(part) {
             const container = document.getElementById('choices-container');
             container.innerHTML = '';
+            container.classList.remove('hidden');
 
-            if (data.choices && data.choices.length > 0) {
-                data.choices.forEach((choice, index) => {
+            // Use the new structure if available
+            if (part.good_choice && part.bad_choice) {
+                const goodBtn = document.createElement('button');
+                goodBtn.className = 'choice-btn good-choice text-white text-xl md:text-2xl font-bold py-5 px-8 rounded-full';
+                goodBtn.innerHTML = `💚 ${part.good_choice.label}`;
+                goodBtn.onclick = () => makeChoice('good');
+                container.appendChild(goodBtn);
+
+                const badBtn = document.createElement('button');
+                badBtn.className = 'choice-btn other-choice text-white text-xl md:text-2xl font-bold py-5 px-8 rounded-full';
+                badBtn.innerHTML = `🤔 ${part.bad_choice.label}`;
+                badBtn.onclick = () => makeChoice('bad');
+                container.appendChild(badBtn);
+            } else if (currentSceneData.choices && currentSceneData.choices.length > 0) {
+                // Fallback to old structure
+                currentSceneData.choices.forEach((choice) => {
                     const btn = document.createElement('button');
                     btn.className = `choice-btn text-white text-xl md:text-2xl font-bold py-5 px-8 rounded-full ${
                         choice.choice === 'good' ? 'good-choice' : 'other-choice'
                     }`;
-
                     const emoji = choice.choice === 'good' ? '💚' : '🤔';
                     btn.innerHTML = `${emoji} ${choice.label}`;
                     btn.onclick = () => makeChoice(choice.choice);
-
                     container.appendChild(btn);
                 });
             }
-
-            showScreen('scene-screen');
         }
 
-        // Display Ending
-        function displayEnding(data) {
-            // Set ending emoji based on outcome
+        // Setup Ending Parts
+        function setupEndingParts(data) {
+            isEnding = true;
+            sceneParts = [];
+            currentPartIndex = 0;
+
+            // Apply emotional tier styling
+            if (data.emotional_tier) {
+                document.body.classList.add(`tier-${data.emotional_tier}`);
+            }
+
+            // Set ending emoji and title based on ending_type
             const endingEmoji = document.getElementById('ending-emoji');
             const endingTitle = document.getElementById('ending-title');
 
             if (data.ending_type === 'best_outcome') {
                 endingEmoji.textContent = '🎉';
                 endingTitle.textContent = 'Wonderful Ending!';
-                createConfetti();
             } else if (data.ending_type === 'mostly_positive' || data.ending_type === 'redemption') {
                 endingEmoji.textContent = '⭐';
                 endingTitle.textContent = 'Great Ending!';
@@ -372,20 +721,170 @@
                 endingEmoji.textContent = '💭';
                 endingTitle.textContent = "Let's Try Again!";
             } else {
-                endingEmoji.textContent = '💭';
+                endingEmoji.textContent = '📖';
                 endingTitle.textContent = 'Story Complete!';
             }
 
-            document.getElementById('ending-narrative').textContent = data.narrative || data.story_summary || '';
-            document.getElementById('final-message').textContent = data.final_message || 'The End!';
-            document.getElementById('parent-talking-point').textContent = data.parent_talking_point || 'What did you learn?';
+            // Build ending parts: consequence → goal_resolution → reflection
+            if (data.consequence) {
+                sceneParts.push({
+                    type: 'consequence',
+                    narrative: data.consequence.narrative,
+                    emotional_beat: data.consequence.emotional_beat,
+                    icon: data.consequence.reinforcement === 'positive' ? '😊' : '😟',
+                    label: 'What Happened'
+                });
+            }
 
-            // Generate end option buttons
+            if (data.goal_resolution) {
+                sceneParts.push({
+                    type: 'goal-resolution',
+                    narrative: data.goal_resolution.narrative,
+                    goal_outcome: data.goal_resolution.goal_outcome,
+                    goal_callback: data.goal_resolution.goal_callback,
+                    icon: data.goal_resolution.goal_outcome === 'achieved' ? '🏆' :
+                          data.goal_resolution.goal_outcome === 'partial' ? '🌟' : '💭',
+                    label: data.goal_resolution.goal_outcome === 'achieved' ? 'Goal Achieved!' :
+                           data.goal_resolution.goal_outcome === 'partial' ? 'Almost There!' : 'Next Time...'
+                });
+            }
+
+            if (data.reflection) {
+                sceneParts.push({
+                    type: 'reflection',
+                    narrative: data.reflection.narrative,
+                    teaching_moment: data.reflection.teaching_moment,
+                    final_feeling: data.reflection.final_feeling,
+                    parent_talking_point: data.reflection.parent_talking_point,
+                    icon: '💝',
+                    label: 'What We Learned'
+                });
+            }
+
+            // Fallback for flat structure
+            if (sceneParts.length === 0) {
+                sceneParts.push({
+                    type: 'story',
+                    narrative: data.narrative || data.story_summary || '',
+                    teaching_moment: data.final_message || data.teaching_moment,
+                    parent_talking_point: data.parent_talking_point,
+                    icon: '📖',
+                    label: 'The End'
+                });
+            }
+
+            showEndingPart(0);
+            showScreen('ending-screen');
+
+            // Trigger celebration effects for best outcomes
+            if (data.ending_type === 'best_outcome' || data.emotional_tier === 'celebration') {
+                setTimeout(createConfetti, 500);
+            } else if (data.emotional_tier === 'satisfied') {
+                setTimeout(createStars, 500);
+            }
+        }
+
+        // Show a specific ending part
+        function showEndingPart(index) {
+            currentPartIndex = index;
+            const part = sceneParts[index];
+
+            // Update progress dots
+            for (let i = 1; i <= 3; i++) {
+                const dot = document.getElementById(`end-dot-${i}`);
+                dot.classList.remove('active', 'completed');
+                if (i - 1 < index) dot.classList.add('completed');
+                if (i - 1 === index) dot.classList.add('active');
+            }
+
+            // Update label
+            document.getElementById('ending-part-label').textContent = part.label;
+
+            // Update content styling
+            const contentDiv = document.getElementById('ending-part-content');
+            contentDiv.className = 'part-content rounded-2xl p-6 mb-6';
+            contentDiv.classList.add(`part-${part.type}`);
+
+            // Update narrative
+            document.getElementById('ending-narrative').textContent = part.narrative || '';
+
+            // Handle goal outcome display
+            const goalContainer = document.getElementById('goal-outcome-container');
+            if (part.type === 'goal-resolution' && part.goal_callback) {
+                goalContainer.classList.remove('hidden');
+                goalContainer.className = 'rounded-2xl p-4 mb-6';
+                if (part.goal_outcome === 'achieved') {
+                    goalContainer.classList.add('bg-green-100');
+                    document.getElementById('goal-outcome').className = 'font-semibold text-lg text-green-700';
+                } else if (part.goal_outcome === 'partial') {
+                    goalContainer.classList.add('bg-yellow-100');
+                    document.getElementById('goal-outcome').className = 'font-semibold text-lg text-yellow-700';
+                } else {
+                    goalContainer.classList.add('bg-gray-100');
+                    document.getElementById('goal-outcome').className = 'font-semibold text-lg text-gray-700';
+                }
+                document.getElementById('goal-outcome').textContent = part.goal_callback;
+            } else {
+                goalContainer.classList.add('hidden');
+            }
+
+            // Handle teaching moment and parent talking point (only on reflection)
+            const teachingContainer = document.getElementById('teaching-container');
+            const parentContainer = document.getElementById('parent-container');
+
+            if (part.type === 'reflection' || (index === sceneParts.length - 1 && part.teaching_moment)) {
+                if (part.teaching_moment) {
+                    teachingContainer.classList.remove('hidden');
+                    document.getElementById('teaching-moment').textContent = part.teaching_moment;
+                } else {
+                    teachingContainer.classList.add('hidden');
+                }
+
+                if (part.parent_talking_point) {
+                    parentContainer.classList.remove('hidden');
+                    document.getElementById('parent-talking-point').textContent = part.parent_talking_point;
+                } else {
+                    parentContainer.classList.add('hidden');
+                }
+            } else {
+                teachingContainer.classList.add('hidden');
+                parentContainer.classList.add('hidden');
+            }
+
+            // Show continue or end options
+            const continueContainer = document.getElementById('ending-continue-container');
+            const optionsContainer = document.getElementById('end-options-container');
+
+            if (index < sceneParts.length - 1) {
+                continueContainer.classList.remove('hidden');
+                optionsContainer.classList.add('hidden');
+            } else {
+                continueContainer.classList.add('hidden');
+                optionsContainer.classList.remove('hidden');
+                generateEndOptions();
+            }
+
+            // Trigger animation
+            contentDiv.style.animation = 'none';
+            contentDiv.offsetHeight;
+            contentDiv.style.animation = 'slideIn 0.4s ease-out';
+        }
+
+        // Show next ending part
+        function showNextEndingPart() {
+            if (currentPartIndex < sceneParts.length - 1) {
+                showEndingPart(currentPartIndex + 1);
+            }
+        }
+
+        // Generate end option buttons
+        function generateEndOptions() {
             const container = document.getElementById('end-options-container');
             container.innerHTML = '';
+            container.classList.remove('hidden');
 
-            if (data.options && data.options.length > 0) {
-                data.options.forEach(option => {
+            if (currentSceneData.options && currentSceneData.options.length > 0) {
+                currentSceneData.options.forEach(option => {
                     const btn = document.createElement('button');
                     btn.className = 'choice-btn text-white text-lg md:text-xl font-bold py-4 px-8 rounded-full';
 
@@ -402,7 +901,7 @@
                     container.appendChild(btn);
                 });
             } else {
-                // Default buttons if none provided
+                // Default buttons
                 const replayBtn = document.createElement('button');
                 replayBtn.className = 'choice-btn other-choice text-white text-lg md:text-xl font-bold py-4 px-8 rounded-full';
                 replayBtn.innerHTML = '🔄 Try Again';
@@ -415,15 +914,13 @@
                 newBtn.onclick = startNewStory;
                 container.appendChild(newBtn);
             }
-
-            showScreen('ending-screen');
         }
 
-        // Confetti Effect for Best Ending
+        // Confetti Effect
         function createConfetti() {
-            const colors = ['#f472b6', '#818cf8', '#4ade80', '#fbbf24', '#60a5fa'];
+            const colors = ['#f472b6', '#818cf8', '#4ade80', '#fbbf24', '#60a5fa', '#f87171'];
 
-            for (let i = 0; i < 50; i++) {
+            for (let i = 0; i < 60; i++) {
                 setTimeout(() => {
                     const confetti = document.createElement('div');
                     confetti.className = 'confetti';
@@ -431,10 +928,34 @@
                     confetti.style.top = '-10px';
                     confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
                     confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                    confetti.style.width = (Math.random() * 10 + 5) + 'px';
+                    confetti.style.height = confetti.style.width;
                     document.body.appendChild(confetti);
 
                     setTimeout(() => confetti.remove(), 5000);
-                }, i * 50);
+                }, i * 40);
+            }
+        }
+
+        // Stars Effect
+        function createStars() {
+            const starEmojis = ['⭐', '🌟', '✨'];
+
+            for (let i = 0; i < 15; i++) {
+                setTimeout(() => {
+                    const star = document.createElement('div');
+                    star.className = 'star';
+                    star.style.position = 'fixed';
+                    star.style.left = (Math.random() * 80 + 10) + 'vw';
+                    star.style.top = (Math.random() * 60 + 20) + 'vh';
+                    star.style.fontSize = (Math.random() * 20 + 20) + 'px';
+                    star.style.animation = 'twinkle 1s ease-in-out forwards';
+                    star.style.pointerEvents = 'none';
+                    star.textContent = starEmojis[Math.floor(Math.random() * starEmojis.length)];
+                    document.body.appendChild(star);
+
+                    setTimeout(() => star.remove(), 1500);
+                }, i * 150);
             }
         }
     </script>
