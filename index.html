@@ -257,6 +257,84 @@
         .progress-dot.completed {
             background: #4ade80;
         }
+
+        /* Story parts with visual separation */
+        .story-part {
+            margin-bottom: 1.5rem;
+            padding: 1rem 1.25rem;
+            border-radius: 16px;
+            animation: slideIn 0.4s ease-out;
+        }
+
+        .story-part.opening {
+            background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+            border-left: 4px solid #fb923c;
+        }
+
+        .story-part.consequence {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border-left: 4px solid #60a5fa;
+        }
+
+        .story-part.transition {
+            background: linear-gradient(135deg, #fdf4ff 0%, #fae8ff 100%);
+            border-left: 4px solid #e879f9;
+        }
+
+        .story-part.decision {
+            background: linear-gradient(135deg, #fefce8 0%, #fef9c3 100%);
+            border-left: 4px solid #facc15;
+        }
+
+        .story-part.resolution {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            border-left: 4px solid #34d399;
+        }
+
+        .story-part .part-label-inline {
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+            color: #6b7280;
+        }
+
+        .story-part .part-text {
+            font-size: 1.15rem;
+            line-height: 1.7;
+            color: #374151;
+        }
+
+        .ending-info {
+            text-align: center;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 16px;
+            margin: 1rem 0;
+        }
+
+        .closing-feeling-box {
+            font-style: italic;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: rgba(255,255,255,0.15);
+            border-radius: 12px;
+        }
+
+        .final-message-box {
+            font-size: 1rem;
+            padding: 0.75rem;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+        }
+
+        /* Parts container */
+        #story-parts-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
@@ -310,8 +388,13 @@
                 <span id="part-label" class="text-gray-500 text-sm uppercase tracking-wide font-semibold">Story</span>
             </div>
 
-            <!-- Story Content -->
-            <div id="part-content" class="part-content rounded-2xl p-6 mb-6">
+            <!-- Story Content (parts-based or single narrative) -->
+            <div id="story-parts-container" class="mb-6">
+                <!-- Parts will be inserted here dynamically -->
+            </div>
+
+            <!-- Fallback single narrative (hidden when using parts) -->
+            <div id="part-content" class="part-content rounded-2xl p-6 mb-6 hidden">
                 <p id="narrative-text" class="text-gray-700 text-xl md:text-2xl leading-relaxed">...</p>
             </div>
 
@@ -364,8 +447,13 @@
                 <span id="ending-part-label" class="text-gray-500 text-sm uppercase tracking-wide font-semibold">Story</span>
             </div>
 
-            <!-- Story Content -->
-            <div id="ending-part-content" class="part-content rounded-2xl p-6 mb-6">
+            <!-- Story Content (parts-based or single narrative) -->
+            <div id="ending-parts-container" class="mb-6 text-left">
+                <!-- Parts will be inserted here dynamically -->
+            </div>
+
+            <!-- Fallback single narrative (hidden when using parts) -->
+            <div id="ending-part-content" class="part-content rounded-2xl p-6 mb-6 hidden">
                 <p id="ending-narrative" class="text-gray-700 text-xl md:text-2xl leading-relaxed">...</p>
             </div>
 
@@ -492,55 +580,143 @@
             }
         }
 
-        // Replay Story
-        async function replayStory() {
-            resetBodyClasses();
-            showScreen('loading-screen');
+        // Get scene type
+        function getSceneType(data) {
+            if (data.scene_id === "scene_1") {
+                return "opening";
+            } else if (data.is_ending === true) {
+                return "ending";
+            } else {
+                return "decision";  // scenes 2-3
+            }
+        }
 
-            const data = await apiCall({
-                action: 'replay',
-                story_id: currentStoryId
-            });
+        // Check if parts exist and have content
+        function hasParts(data) {
+            return data.parts && Object.values(data.parts).some(p => p !== null && p !== undefined && p !== '');
+        }
 
-            if (data) {
-                currentSceneId = data.scene_id;
-                if (data.session_id) currentSessionId = data.session_id;
+        // Render parts with visual separation
+        function renderPartsView(data, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            const parts = data.parts;
+            const sceneType = getSceneType(data);
 
-                // Detection: is_ending === true means ending screen
-                if (data.is_ending === true) {
-                    displayEnding(data);
-                } else {
-                    displayScene(data);
+            if (sceneType === 'opening') {
+                // Opening scene: opening → transition → decision
+                if (parts.opening) {
+                    container.innerHTML += `
+                        <div class="story-part opening">
+                            <div class="part-label-inline">✨ Once upon a time...</div>
+                            <div class="part-text">${parts.opening}</div>
+                        </div>`;
+                }
+                if (parts.transition) {
+                    container.innerHTML += `
+                        <div class="story-part transition">
+                            <div class="part-label-inline">👋 And then...</div>
+                            <div class="part-text">${parts.transition}</div>
+                        </div>`;
+                }
+                if (parts.decision) {
+                    container.innerHTML += `
+                        <div class="story-part decision">
+                            <div class="part-label-inline">🤔 Hmm...</div>
+                            <div class="part-text">${parts.decision}</div>
+                        </div>`;
+                }
+            } else if (sceneType === 'ending') {
+                // Ending scene: consequence → resolution
+                if (parts.consequence) {
+                    container.innerHTML += `
+                        <div class="story-part consequence">
+                            <div class="part-label-inline">✨ What happened...</div>
+                            <div class="part-text">${parts.consequence}</div>
+                        </div>`;
+                }
+                if (parts.resolution) {
+                    container.innerHTML += `
+                        <div class="story-part resolution">
+                            <div class="part-label-inline">🌟 The End</div>
+                            <div class="part-text">${parts.resolution}</div>
+                        </div>`;
+                }
+            } else {
+                // Decision scenes (2-3): consequence → transition → decision
+                if (parts.consequence) {
+                    container.innerHTML += `
+                        <div class="story-part consequence">
+                            <div class="part-label-inline">✨ What happened...</div>
+                            <div class="part-text">${parts.consequence}</div>
+                        </div>`;
+                }
+                if (parts.transition) {
+                    container.innerHTML += `
+                        <div class="story-part transition">
+                            <div class="part-label-inline">🚶 Meanwhile...</div>
+                            <div class="part-text">${parts.transition}</div>
+                        </div>`;
+                }
+                if (parts.decision) {
+                    container.innerHTML += `
+                        <div class="story-part decision">
+                            <div class="part-label-inline">🤔 Hmm...</div>
+                            <div class="part-text">${parts.decision}</div>
+                        </div>`;
                 }
             }
         }
 
-        // Display Scene (is_ending === false)
-        // Shows: response.narrative, response.choices[0].label, response.choices[1].label
+        // Display Scene (opening or decision)
         function displayScene(data) {
-            // Hide progress dots and extra UI elements for simple view
+            const sceneType = getSceneType(data);
+
+            // Hide progress dots
             document.querySelector('#scene-screen .progress-dots').classList.add('hidden');
-            document.getElementById('sub-lesson-container').classList.add('hidden');
-            document.getElementById('emotional-beat-container').classList.add('hidden');
             document.getElementById('continue-container').classList.add('hidden');
 
-            // Show character badge only on scene 1
+            // Show character badge only on opening scene
             const badgeContainer = document.getElementById('character-badge-container');
-            if (data.scene_id === 'scene_1' || data.level === 1) {
+            if (sceneType === 'opening') {
                 badgeContainer.classList.remove('hidden');
-                document.getElementById('character-name').textContent = data.character_name || 'Friend';
+                document.getElementById('character-name').textContent = data.character_name || 'Milo';
+                document.getElementById('part-icon').textContent = '🌟';
+                document.getElementById('part-label').textContent = 'Our Story Begins';
             } else {
                 badgeContainer.classList.add('hidden');
+                document.getElementById('part-icon').textContent = '📖';
+                document.getElementById('part-label').textContent = 'Story';
             }
 
-            // Set icon and label
-            document.getElementById('part-icon').textContent = '📖';
-            document.getElementById('part-label').textContent = 'Story';
+            // Hide emotional beat container (consequence is now in parts)
+            document.getElementById('emotional-beat-container').classList.add('hidden');
 
-            // Display response.narrative as main story text
-            const contentDiv = document.getElementById('part-content');
-            contentDiv.className = 'part-content rounded-2xl p-6 mb-6 bg-gradient-to-br from-blue-50 to-purple-50';
-            document.getElementById('narrative-text').textContent = data.narrative || '';
+            // Check if parts exist (new format) or fall back to narrative (old format)
+            const partsContainer = document.getElementById('story-parts-container');
+            const narrativeContainer = document.getElementById('part-content');
+
+            if (hasParts(data)) {
+                // NEW: Render with visual separation
+                partsContainer.classList.remove('hidden');
+                narrativeContainer.classList.add('hidden');
+                renderPartsView(data, 'story-parts-container');
+            } else {
+                // FALLBACK: Render single narrative
+                partsContainer.classList.add('hidden');
+                narrativeContainer.classList.remove('hidden');
+                narrativeContainer.className = 'part-content rounded-2xl p-6 mb-6 bg-gradient-to-br from-blue-50 to-purple-50';
+                document.getElementById('narrative-text').textContent = data.narrative || '';
+            }
+
+            // Display teaching_moment (lesson topic)
+            const subLessonContainer = document.getElementById('sub-lesson-container');
+            if (data.teaching_moment) {
+                subLessonContainer.classList.remove('hidden');
+                document.getElementById('sub-lesson').textContent = data.teaching_moment;
+            } else {
+                subLessonContainer.classList.add('hidden');
+            }
 
             // Generate choice buttons from response.choices[]
             const container = document.getElementById('choices-container');
@@ -567,10 +743,8 @@
         }
 
         // Display Ending (is_ending === true)
-        // Shows: response.narrative, response.closing_feeling, response.final_message
-        // Uses: response.ending_type for styling
         function displayEnding(data) {
-            // Hide progress dots for simple view
+            // Hide progress dots
             document.querySelector('#ending-screen .progress-dots').classList.add('hidden');
             document.getElementById('ending-continue-container').classList.add('hidden');
 
@@ -590,40 +764,52 @@
                 endingTitle.textContent = 'Wonderful Ending!';
                 setTimeout(createConfetti, 500);
             } else if (endingType === 'satisfied') {
-                endingEmoji.textContent = '⭐';
+                endingEmoji.textContent = '😊';
                 endingTitle.textContent = 'Great Ending!';
                 setTimeout(createStars, 500);
             } else if (endingType === 'hopeful') {
-                endingEmoji.textContent = '🌈';
+                endingEmoji.textContent = '🌟';
                 endingTitle.textContent = 'The End!';
             } else if (endingType === 'reflective') {
-                endingEmoji.textContent = '💭';
+                endingEmoji.textContent = '🤔';
                 endingTitle.textContent = "Let's Think About It!";
             } else {
                 endingEmoji.textContent = '📖';
                 endingTitle.textContent = 'The End!';
             }
 
-            // Hide part label for simple view
+            // Hide part label (no longer used for consequence)
             document.getElementById('ending-part-label').textContent = '';
 
-            // Display response.narrative as main story text
-            const contentDiv = document.getElementById('ending-part-content');
-            contentDiv.className = 'part-content rounded-2xl p-6 mb-6 bg-gradient-to-br from-blue-50 to-purple-50';
-            document.getElementById('ending-narrative').textContent = data.narrative || '';
+            // Check if parts exist (new format) or fall back to narrative (old format)
+            const partsContainer = document.getElementById('ending-parts-container');
+            const narrativeContainer = document.getElementById('ending-part-content');
 
-            // Display response.closing_feeling (optional)
+            if (hasParts(data)) {
+                // NEW: Render with visual separation
+                partsContainer.classList.remove('hidden');
+                narrativeContainer.classList.add('hidden');
+                renderPartsView(data, 'ending-parts-container');
+            } else {
+                // FALLBACK: Render single narrative
+                partsContainer.classList.add('hidden');
+                narrativeContainer.classList.remove('hidden');
+                narrativeContainer.className = 'part-content rounded-2xl p-6 mb-6 bg-gradient-to-br from-blue-50 to-purple-50';
+                document.getElementById('ending-narrative').textContent = data.narrative || '';
+            }
+
+            // Display closing_feeling (emotional summary)
             const closingContainer = document.getElementById('goal-outcome-container');
             if (data.closing_feeling) {
                 closingContainer.classList.remove('hidden');
-                closingContainer.className = 'rounded-2xl p-4 mb-6 bg-purple-100';
-                document.getElementById('goal-outcome').className = 'font-semibold text-lg text-purple-700';
-                document.getElementById('goal-outcome').textContent = data.closing_feeling;
+                closingContainer.className = 'ending-info mb-6';
+                document.getElementById('goal-outcome').className = 'closing-feeling-box';
+                document.getElementById('goal-outcome').textContent = `"${data.closing_feeling}"`;
             } else {
                 closingContainer.classList.add('hidden');
             }
 
-            // Display response.final_message as the lesson/moral
+            // Display final_message as the lesson/moral
             const teachingContainer = document.getElementById('teaching-container');
             if (data.final_message) {
                 teachingContainer.classList.remove('hidden');
@@ -635,26 +821,67 @@
             // Hide parent talking point container
             document.getElementById('parent-container').classList.add('hidden');
 
-            // Generate action buttons: "Try Different Choices" and "New Story"
+            // Generate action buttons from options[] or use defaults
             const optionsContainer = document.getElementById('end-options-container');
             optionsContainer.innerHTML = '';
             optionsContainer.classList.remove('hidden');
 
-            // Replay button - "Try Different Choices"
-            const replayBtn = document.createElement('button');
-            replayBtn.className = 'choice-btn other-choice text-white text-lg md:text-xl font-bold py-4 px-8 rounded-full';
-            replayBtn.innerHTML = '🔄 Try Different Choices';
-            replayBtn.onclick = replayStory;
-            optionsContainer.appendChild(replayBtn);
+            if (data.options && data.options.length > 0) {
+                // Use options from API
+                data.options.forEach(option => {
+                    const btn = document.createElement('button');
+                    if (option.action === 'replay') {
+                        btn.className = 'choice-btn other-choice text-white text-lg md:text-xl font-bold py-4 px-8 rounded-full';
+                        btn.innerHTML = `🔄 ${option.label}`;
+                        btn.onclick = () => handleEndingOption('replay');
+                    } else if (option.action === 'new_story') {
+                        btn.className = 'choice-btn good-choice text-white text-lg md:text-xl font-bold py-4 px-8 rounded-full';
+                        btn.innerHTML = `✨ ${option.label}`;
+                        btn.onclick = () => handleEndingOption('new_story');
+                    }
+                    optionsContainer.appendChild(btn);
+                });
+            } else {
+                // Default buttons
+                const replayBtn = document.createElement('button');
+                replayBtn.className = 'choice-btn other-choice text-white text-lg md:text-xl font-bold py-4 px-8 rounded-full';
+                replayBtn.innerHTML = '🔄 Try Different Choices';
+                replayBtn.onclick = () => handleEndingOption('replay');
+                optionsContainer.appendChild(replayBtn);
 
-            // New Story button
-            const newBtn = document.createElement('button');
-            newBtn.className = 'choice-btn good-choice text-white text-lg md:text-xl font-bold py-4 px-8 rounded-full';
-            newBtn.innerHTML = '✨ New Story';
-            newBtn.onclick = startNewStory;
-            optionsContainer.appendChild(newBtn);
+                const newBtn = document.createElement('button');
+                newBtn.className = 'choice-btn good-choice text-white text-lg md:text-xl font-bold py-4 px-8 rounded-full';
+                newBtn.innerHTML = '✨ New Story';
+                newBtn.onclick = () => handleEndingOption('new_story');
+                optionsContainer.appendChild(newBtn);
+            }
 
             showScreen('ending-screen');
+        }
+
+        // Handle ending option buttons
+        async function handleEndingOption(action) {
+            showScreen('loading-screen');
+
+            const data = await apiCall({
+                action: action,
+                story_id: currentStoryId,
+                session_id: currentSessionId
+            });
+
+            if (data) {
+                currentSceneId = data.scene_id;
+                if (data.session_id) currentSessionId = data.session_id;
+                if (data.story_id) currentStoryId = data.story_id;
+
+                resetBodyClasses();
+
+                if (data.is_ending === true) {
+                    displayEnding(data);
+                } else {
+                    displayScene(data);
+                }
+            }
         }
 
         // Confetti Effect
