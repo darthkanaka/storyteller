@@ -178,6 +178,15 @@
             background: linear-gradient(135deg, #f3e8ff 0%, #faf5ff 100%);
         }
 
+        .part-resolution {
+            border-left: 4px solid #10b981;
+            background: linear-gradient(135deg, #d1fae5 0%, #ecfdf5 100%);
+        }
+
+        body.tier-hopeful {
+            background: linear-gradient(135deg, #fbbf24 0%, #4ade80 50%, #22d3ee 100%);
+        }
+
         .loading-spinner {
             border: 4px solid rgba(255,255,255,0.3);
             border-top: 4px solid white;
@@ -452,7 +461,8 @@
                 currentSceneId = data.scene_id;
                 currentSceneData = data;
 
-                if (data.is_ending) {
+                // Check for ending: resolution field indicates an ending scene
+                if (data.resolution !== undefined) {
                     setupEndingParts(data);
                 } else {
                     setupSceneParts(data);
@@ -475,7 +485,8 @@
                 currentSceneId = data.scene_id;
                 currentSceneData = data;
 
-                if (data.is_ending) {
+                // Check for ending: resolution field indicates an ending scene
+                if (data.resolution !== undefined) {
                     setupEndingParts(data);
                 } else {
                     setupSceneParts(data);
@@ -497,7 +508,8 @@
                 currentSceneId = data.scene_id;
                 currentSceneData = data;
 
-                if (data.is_ending) {
+                // Check for ending: resolution field indicates an ending scene
+                if (data.resolution !== undefined) {
                     setupEndingParts(data);
                 } else {
                     setupSceneParts(data);
@@ -510,6 +522,9 @@
             isEnding = false;
             sceneParts = [];
             currentPartIndex = 0;
+
+            // Ensure third progress dot is visible for non-ending scenes
+            document.getElementById('end-dot-3').style.display = '';
 
             // Determine if this is scene 1 (has opening) or scene 2-3 (has consequence)
             if (data.opening) {
@@ -665,21 +680,21 @@
             container.innerHTML = '';
             container.classList.remove('hidden');
 
-            // Use the new structure if available
+            // Use the new structure if available - good_choice and bad_choice are strings directly
             if (part.good_choice && part.bad_choice) {
                 const goodBtn = document.createElement('button');
                 goodBtn.className = 'choice-btn good-choice text-white text-xl md:text-2xl font-bold py-5 px-8 rounded-full';
-                goodBtn.innerHTML = `💚 ${part.good_choice.label}`;
+                goodBtn.innerHTML = `💚 ${part.good_choice}`;
                 goodBtn.onclick = () => makeChoice('good');
                 container.appendChild(goodBtn);
 
                 const badBtn = document.createElement('button');
                 badBtn.className = 'choice-btn other-choice text-white text-xl md:text-2xl font-bold py-5 px-8 rounded-full';
-                badBtn.innerHTML = `🤔 ${part.bad_choice.label}`;
+                badBtn.innerHTML = `🤔 ${part.bad_choice}`;
                 badBtn.onclick = () => makeChoice('bad');
                 container.appendChild(badBtn);
             } else if (currentSceneData.choices && currentSceneData.choices.length > 0) {
-                // Fallback to old structure
+                // Fallback to choices array structure
                 currentSceneData.choices.forEach((choice) => {
                     const btn = document.createElement('button');
                     btn.className = `choice-btn text-white text-xl md:text-2xl font-bold py-5 px-8 rounded-full ${
@@ -699,33 +714,34 @@
             sceneParts = [];
             currentPartIndex = 0;
 
-            // Apply emotional tier styling
-            if (data.emotional_tier) {
-                document.body.classList.add(`tier-${data.emotional_tier}`);
-            }
+            // Get outcome_type from resolution
+            const outcomeType = data.resolution?.outcome_type || 'reflective';
 
-            // Set ending emoji and title based on ending_type
+            // Apply emotional tier styling based on outcome_type
+            document.body.classList.add(`tier-${outcomeType}`);
+
+            // Set ending emoji and title based on resolution.outcome_type
             const endingEmoji = document.getElementById('ending-emoji');
             const endingTitle = document.getElementById('ending-title');
 
-            if (data.ending_type === 'best_outcome') {
+            if (outcomeType === 'celebration') {
                 endingEmoji.textContent = '🎉';
                 endingTitle.textContent = 'Wonderful Ending!';
-            } else if (data.ending_type === 'mostly_positive' || data.ending_type === 'redemption') {
+            } else if (outcomeType === 'satisfied') {
                 endingEmoji.textContent = '⭐';
                 endingTitle.textContent = 'Great Ending!';
-            } else if (data.ending_type === 'mixed' || data.ending_type === 'late_redemption') {
+            } else if (outcomeType === 'hopeful') {
                 endingEmoji.textContent = '🌈';
                 endingTitle.textContent = 'The End!';
-            } else if (data.ending_type === 'learning_opportunity') {
+            } else if (outcomeType === 'reflective') {
                 endingEmoji.textContent = '💭';
-                endingTitle.textContent = "Let's Try Again!";
+                endingTitle.textContent = "Let's Think About It!";
             } else {
                 endingEmoji.textContent = '📖';
                 endingTitle.textContent = 'Story Complete!';
             }
 
-            // Build ending parts: consequence → goal_resolution → reflection
+            // Build ending parts: consequence → resolution (2 parts only, no decision_setup)
             if (data.consequence) {
                 sceneParts.push({
                     type: 'consequence',
@@ -736,28 +752,19 @@
                 });
             }
 
-            if (data.goal_resolution) {
+            if (data.resolution) {
                 sceneParts.push({
-                    type: 'goal-resolution',
-                    narrative: data.goal_resolution.narrative,
-                    goal_outcome: data.goal_resolution.goal_outcome,
-                    goal_callback: data.goal_resolution.goal_callback,
-                    icon: data.goal_resolution.goal_outcome === 'achieved' ? '🏆' :
-                          data.goal_resolution.goal_outcome === 'partial' ? '🌟' : '💭',
-                    label: data.goal_resolution.goal_outcome === 'achieved' ? 'Goal Achieved!' :
-                           data.goal_resolution.goal_outcome === 'partial' ? 'Almost There!' : 'Next Time...'
-                });
-            }
-
-            if (data.reflection) {
-                sceneParts.push({
-                    type: 'reflection',
-                    narrative: data.reflection.narrative,
-                    teaching_moment: data.reflection.teaching_moment,
-                    final_feeling: data.reflection.final_feeling,
-                    parent_talking_point: data.reflection.parent_talking_point,
-                    icon: '💝',
-                    label: 'What We Learned'
+                    type: 'resolution',
+                    narrative: data.resolution.narrative,
+                    outcome_type: data.resolution.outcome_type,
+                    closing_feeling: data.resolution.closing_feeling,
+                    lesson_reinforcement: data.resolution.lesson_reinforcement,
+                    icon: outcomeType === 'celebration' ? '🏆' :
+                          outcomeType === 'satisfied' ? '🌟' :
+                          outcomeType === 'hopeful' ? '🌈' : '💭',
+                    label: outcomeType === 'celebration' ? 'Wonderful!' :
+                           outcomeType === 'satisfied' ? 'Well Done!' :
+                           outcomeType === 'hopeful' ? 'Looking Ahead' : 'What We Learned'
                 });
             }
 
@@ -766,20 +773,23 @@
                 sceneParts.push({
                     type: 'story',
                     narrative: data.narrative || data.story_summary || '',
-                    teaching_moment: data.final_message || data.teaching_moment,
-                    parent_talking_point: data.parent_talking_point,
+                    lesson_reinforcement: data.final_message || data.teaching_moment,
+                    closing_feeling: data.parent_talking_point,
                     icon: '📖',
                     label: 'The End'
                 });
             }
 
+            // Update progress dots for 2-part ending
+            document.getElementById('end-dot-3').style.display = 'none';
+
             showEndingPart(0);
             showScreen('ending-screen');
 
-            // Trigger celebration effects for best outcomes
-            if (data.ending_type === 'best_outcome' || data.emotional_tier === 'celebration') {
+            // Trigger celebration effects based on outcome_type
+            if (outcomeType === 'celebration') {
                 setTimeout(createConfetti, 500);
-            } else if (data.emotional_tier === 'satisfied') {
+            } else if (outcomeType === 'satisfied') {
                 setTimeout(createStars, 500);
             }
         }
@@ -789,8 +799,8 @@
             currentPartIndex = index;
             const part = sceneParts[index];
 
-            // Update progress dots
-            for (let i = 1; i <= 3; i++) {
+            // Update progress dots (only 2 for endings)
+            for (let i = 1; i <= 2; i++) {
                 const dot = document.getElementById(`end-dot-${i}`);
                 dot.classList.remove('active', 'completed');
                 if (i - 1 < index) dot.classList.add('completed');
@@ -808,44 +818,43 @@
             // Update narrative
             document.getElementById('ending-narrative').textContent = part.narrative || '';
 
-            // Handle goal outcome display
+            // Handle closing feeling display (shown during resolution)
             const goalContainer = document.getElementById('goal-outcome-container');
-            if (part.type === 'goal-resolution' && part.goal_callback) {
+            if (part.type === 'resolution' && part.closing_feeling) {
                 goalContainer.classList.remove('hidden');
                 goalContainer.className = 'rounded-2xl p-4 mb-6';
-                if (part.goal_outcome === 'achieved') {
+                if (part.outcome_type === 'celebration') {
                     goalContainer.classList.add('bg-green-100');
                     document.getElementById('goal-outcome').className = 'font-semibold text-lg text-green-700';
-                } else if (part.goal_outcome === 'partial') {
+                } else if (part.outcome_type === 'satisfied') {
+                    goalContainer.classList.add('bg-blue-100');
+                    document.getElementById('goal-outcome').className = 'font-semibold text-lg text-blue-700';
+                } else if (part.outcome_type === 'hopeful') {
                     goalContainer.classList.add('bg-yellow-100');
                     document.getElementById('goal-outcome').className = 'font-semibold text-lg text-yellow-700';
                 } else {
                     goalContainer.classList.add('bg-gray-100');
                     document.getElementById('goal-outcome').className = 'font-semibold text-lg text-gray-700';
                 }
-                document.getElementById('goal-outcome').textContent = part.goal_callback;
+                document.getElementById('goal-outcome').textContent = part.closing_feeling;
             } else {
                 goalContainer.classList.add('hidden');
             }
 
-            // Handle teaching moment and parent talking point (only on reflection)
+            // Handle lesson reinforcement (only on resolution - last part)
             const teachingContainer = document.getElementById('teaching-container');
             const parentContainer = document.getElementById('parent-container');
 
-            if (part.type === 'reflection' || (index === sceneParts.length - 1 && part.teaching_moment)) {
-                if (part.teaching_moment) {
+            if (part.type === 'resolution' || (index === sceneParts.length - 1 && part.lesson_reinforcement)) {
+                if (part.lesson_reinforcement) {
                     teachingContainer.classList.remove('hidden');
-                    document.getElementById('teaching-moment').textContent = part.teaching_moment;
+                    document.getElementById('teaching-moment').textContent = part.lesson_reinforcement;
                 } else {
                     teachingContainer.classList.add('hidden');
                 }
 
-                if (part.parent_talking_point) {
-                    parentContainer.classList.remove('hidden');
-                    document.getElementById('parent-talking-point').textContent = part.parent_talking_point;
-                } else {
-                    parentContainer.classList.add('hidden');
-                }
+                // Hide parent container for new schema (no parent_talking_point in resolution)
+                parentContainer.classList.add('hidden');
             } else {
                 teachingContainer.classList.add('hidden');
                 parentContainer.classList.add('hidden');
